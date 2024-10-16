@@ -91,6 +91,7 @@ public class DomainServiceImp  implements DomainService{
         formData.add("RecordType3", "A");
         formData.add("Address3", "110.74.194.125");
         formData.add("TTL3", "1900");
+
         System.out.println(formData);
         ArrayList<Host> allHost = new ArrayList<>();
         for (Host host : getAllHost){
@@ -98,8 +99,14 @@ public class DomainServiceImp  implements DomainService{
             System.out.println(host);
         }
         MultiValueMap<String, String> hashMap = convertArrayListToMultiValueMap(allHost,"namecheap.domains.dns.setHosts");
-
-        for (String entry : hashMap.keySet()){
+        MultiValueMap<String, String> newhashMap = new LinkedMultiValueMap<>();
+        newhashMap.add("ApiUser","ksga");
+        newhashMap.add("ApiKey","e537956a6bec49a98e6e234b79bf10f2");
+        newhashMap.add("UserName","ksga");
+        newhashMap.add("ClientIp", "58.97.230.128");
+        newhashMap.add("Command", "namecheap.domains.dns.setHosts");
+        newhashMap.addAll(hashMap);
+        for (String entry : newhashMap.keySet()){
             System.out.println(entry + " = " + hashMap.get(entry));
         }
         return webClient.post()
