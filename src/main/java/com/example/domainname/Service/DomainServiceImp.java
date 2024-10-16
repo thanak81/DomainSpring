@@ -21,6 +21,8 @@ import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONObject;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -98,6 +100,10 @@ public class DomainServiceImp  implements DomainService{
         formData.add("Address3", "110.74.194.125");
         formData.add("TTL3", "1900");
         System.out.println(getAllHost);
+        HashMap<String, String> hashMap = convertArrayListToHashMap(getAllHost);
+        for (Map.Entry<String,String> entry : hashMap.entrySet()){
+            System.out.println(entry.getKey()+ " : " + entry.getValue());
+        }
         return webClient.post()
                     .uri(uri)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -106,6 +112,16 @@ public class DomainServiceImp  implements DomainService{
                     .bodyToMono(String.class) // Adjust to your expected response type
                     .block();
     }
+    private static HashMap<String,String> convertArrayListToHashMap(ArrayList<Host> arrayList){
+        HashMap<String, String> hashMap = new HashMap<>();
+
+        for (Host str : arrayList) {
+
+            hashMap.put("HostName", str.getName());
+        }
+        return hashMap;
+    }
+
 }
 
 
