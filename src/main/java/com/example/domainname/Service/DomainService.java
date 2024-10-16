@@ -13,5 +13,5 @@ public interface DomainService {
     ApiResponse getDomainDetail(String domainName) throws IOException;
 
     ApiResponse getHosts() throws JsonProcessingException;
-    String addHost() throws JsonProcessingException;
+    ApiResponse addHost(HostRequest hostRequest) throws JsonProcessingException;
 }

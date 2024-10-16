@@ -8,14 +8,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.domainname.Entity.ApiResponse;
 import com.example.domainname.Entity.Host;
+import com.example.domainname.Entity.HostRequest;
 import com.example.domainname.Response.ApiVersion;
 import com.example.domainname.Service.DomainService;
+import com.example.domainname.exception.BadRequestException;
 import com.example.domainname.exception.NotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -83,12 +86,15 @@ public class DomainController {
         return ResponseEntity.ok(apiVersion);
     }
     @PostMapping("/host")
-    ResponseEntity<?> addHost() throws JsonProcessingException {
-        String response = domainService.addHost();
+    ResponseEntity<?> addHost(@RequestBody HostRequest hostRequest) throws JsonProcessingException {
+        ApiResponse hostResponse = domainService.addHost(hostRequest);
+        if (!hostResponse.getErrors().isEmpty()){
+            throw new BadRequestException("Error From NameCheap API "+hostResponse.getErrors());
+        }
         ApiVersion<?> apiVersion;
         apiVersion = ApiVersion.builder()
                 .message("New Host add successfully")
-                .payload(response)
+                .payload(hostResponse)
                 .status(HttpStatus.FOUND)
                 .timestamp(LocalDateTime.now())
                 .build();

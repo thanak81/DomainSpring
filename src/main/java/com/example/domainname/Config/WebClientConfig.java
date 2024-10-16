@@ -2,11 +2,12 @@ package com.example.domainname.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
     @Bean
-    public org.springframework.web.reactive.function.client.WebClient webClient(){
-        return org.springframework.web.reactive.function.client.WebClient.builder().baseUrl("https://api.namecheap.com").build();
+    public WebClient webClient(){
+        return WebClient.builder().baseUrl("https://api.namecheap.com").build();
     }
 }
