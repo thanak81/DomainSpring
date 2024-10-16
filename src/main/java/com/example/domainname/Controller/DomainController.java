@@ -1,19 +1,25 @@
 package com.example.domainname.Controller;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.domainname.Entity.ApiResponse;
 import com.example.domainname.Entity.Host;
 import com.example.domainname.Response.ApiVersion;
 import com.example.domainname.Service.DomainService;
 import com.example.domainname.exception.NotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
@@ -63,9 +69,9 @@ public class DomainController {
         }
         ArrayList<Host> oldAllHost = hostDetail.getCommandResponse().getDomainDNSGetHostsResult().getHost();
         ArrayList<Host> newHost = new ArrayList<>();
-        for (Host host : oldAllHost){
-            System.out.println(host);
-        }
+        // for (Host host : oldAllHost){
+        //     System.out.println(host);
+        // }
 
         ApiVersion<?> apiVersion;
         apiVersion = ApiVersion.builder()
