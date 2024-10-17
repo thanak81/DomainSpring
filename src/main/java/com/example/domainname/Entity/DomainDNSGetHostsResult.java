@@ -12,7 +12,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 public class DomainDNSGetHostsResult {
     @JsonProperty("host")
-    ArrayList<Host> host;
+    ArrayList<Host> hosts;
     @JsonProperty("IsUsingOurDNS")
     boolean isUsingOurDNS;
     @JsonProperty("Domain")

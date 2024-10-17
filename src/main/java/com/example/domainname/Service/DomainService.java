@@ -14,4 +14,6 @@ public interface DomainService {
 
     ApiResponse getHosts() throws JsonProcessingException;
     ApiResponse addHost(HostRequest hostRequest) throws JsonProcessingException;
+    ApiResponse removeHost(HostRequest hostRequest) throws JsonProcessingException;
+
 }

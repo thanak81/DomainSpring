@@ -2,8 +2,11 @@ package com.example.domainname.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -68,6 +71,7 @@ public class DomainServiceImp  implements DomainService{
                 .retrieve().body(String.class);
         JsonNode jsonNode = xmlMapper.readTree(domains);
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         return objectMapper.treeToValue(jsonNode, ApiResponse.class);
     }
     @Autowired
@@ -76,7 +80,7 @@ public class DomainServiceImp  implements DomainService{
     public ApiResponse addHost(HostRequest hostRequest) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
         String uri = "/xml.response";
-        ArrayList<Host> getAllHost = getHosts().getCommandResponse().getDomainDNSGetHostsResult().getHost();
+        ArrayList<Host> getAllHost = getHosts().getCommandResponse().getDomainDNSGetHostsResult().getHosts();
         MultiValueMap<String,String> hostData = new LinkedMultiValueMap<>();
         NameCheapAPI nameCheapAPI = new NameCheapAPI();
         hostData.add("ApiKey", nameCheapAPI.getApiKey());
@@ -90,18 +94,19 @@ public class DomainServiceImp  implements DomainService{
         ArrayList<Host> allHost = new ArrayList<>();
         Host newHost = new Host();
         newHost.setName(hostRequest.getName());
-
-        for (Host host : getAllHost){
+        if(getAllHost != null){
+            for (Host host : getAllHost){
                 if(newHost.getName().equals(host.getName())){
-                   throw new BadRequestException("Host name already exist");
+                    throw new BadRequestException("Host name already exist");
                 }
                 allHost.add(host);
+            }
         }
         allHost.add(newHost);
         System.out.println("realData"+allHost);
 
-        MultiValueMap<String, String> hashMap = convertArrayListToMultiValueMap(allHost);
-        hostData.addAll(hashMap);
+        MultiValueMap<String, String> hostMap = convertArrayListToMultiValueMap(allHost);
+        hostData.addAll(hostMap);
 
         System.out.println("FormData"+hostData);
         String postHost = webClient.post()
@@ -115,6 +120,56 @@ public class DomainServiceImp  implements DomainService{
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.treeToValue(jsonNode, ApiResponse.class);
     }
+
+    @Override
+    public ApiResponse removeHost(HostRequest hostRequest) throws JsonProcessingException {
+        XmlMapper xmlMapper = new XmlMapper();
+        String uri = "/xml.response";
+        ArrayList<Host> getAllHost = getHosts().getCommandResponse().getDomainDNSGetHostsResult().getHosts();
+
+        MultiValueMap<String, String> hostData = new LinkedMultiValueMap<>();
+        NameCheapAPI nameCheapAPI = new NameCheapAPI();
+        hostData.add("ApiKey", nameCheapAPI.getApiKey());
+        hostData.add("ApiUser", nameCheapAPI.getApiUser());
+        hostData.add("UserName", nameCheapAPI.getApiUser());
+        hostData.add("ClientIp", nameCheapAPI.getClientIp());
+        hostData.add("Command", "namecheap.domains.dns.setHosts");
+        hostData.add("SLD", nameCheapAPI.getSLD());
+        hostData.add("TLD", nameCheapAPI.getTLD());
+        hostData.add("Nameserver", hostRequest.getName());
+        ArrayList<Host> allHost = new ArrayList<>(getAllHost);
+        boolean check= true;
+        for (Host host : allHost){
+//            if(hostRequest.getName().equals(host.getName())) {
+            if(!Objects.equals(hostRequest.getName(), host.getName())) {
+                check = false;
+            }
+            else{
+                System.out.println("false");
+                allHost.remove(host);
+                check = true;
+                break;
+            }
+        }
+        if(!check){
+            throw new BadRequestException("Host name not exist");
+        }
+        MultiValueMap<String, String> hostMap = convertArrayListToMultiValueMap(allHost);
+        hostData.addAll(hostMap);
+        System.out.println(hostData);
+
+        String deleteHost = webClient
+                .method(HttpMethod.DELETE)
+                .uri(uri)
+                .bodyValue(hostData)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        JsonNode jsonNode = xmlMapper.readTree(deleteHost);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.treeToValue(jsonNode, ApiResponse.class);
+    }
+
     private static MultiValueMap<String,String> convertArrayListToMultiValueMap(ArrayList<Host> allHostList){
         MultiValueMap<String, String> hostMap = new LinkedMultiValueMap<>();
         for (int i=1;i<allHostList.size()+1;i++) {

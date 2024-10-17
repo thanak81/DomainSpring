@@ -4,14 +4,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.domainname.Entity.ApiResponse;
 import com.example.domainname.Entity.Host;
@@ -70,16 +66,14 @@ public class DomainController {
             System.out.println("Error");
             throw new NotFoundException("Error From NameCheap API "+hostDetail.getErrors());
         }
-        ArrayList<Host> oldAllHost = hostDetail.getCommandResponse().getDomainDNSGetHostsResult().getHost();
-        ArrayList<Host> newHost = new ArrayList<>();
-        // for (Host host : oldAllHost){
-        //     System.out.println(host);
-        // }
-
+        ArrayList<Host> allHost = hostDetail.getCommandResponse().getDomainDNSGetHostsResult().getHosts();
+        if(allHost == null){
+            throw new NotFoundException("Sub Domain is empty");
+        }
         ApiVersion<?> apiVersion;
         apiVersion = ApiVersion.builder()
                 .message("Successfully GET ALL Host for "+ hostDetail.getCommandResponse().getDomainDNSGetHostsResult().getDomain())
-                .payload(oldAllHost)
+                .payload(allHost)
                 .status(HttpStatus.FOUND)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -94,6 +88,22 @@ public class DomainController {
         ApiVersion<?> apiVersion;
         apiVersion = ApiVersion.builder()
                 .message("New Host add successfully")
+                .payload(hostResponse)
+                .status(HttpStatus.FOUND)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return ResponseEntity.ok(apiVersion);
+    }
+
+    @DeleteMapping("/host")
+    ResponseEntity<?> removeHost(@RequestBody HostRequest hostRequest) throws JsonProcessingException{
+        ApiResponse hostResponse = domainService.removeHost(hostRequest);
+        if (!hostResponse.getErrors().isEmpty()){
+            throw new BadRequestException("Error From NameCheap API "+hostResponse.getErrors());
+        }
+        ApiVersion<?> apiVersion;
+        apiVersion = ApiVersion.builder()
+                .message("Host delete successfully")
                 .payload(hostResponse)
                 .status(HttpStatus.FOUND)
                 .timestamp(LocalDateTime.now())
